@@ -18,218 +18,25 @@
 			height: 600px;
 		}
 	</style>
-	
+
 	<script src="pixi.js"></script>
-	<script src="../../bin/pixi.dev.js"></script>
-	<script src="NormalMapFilter.js"></script>
-	
+    <script src="../../bin/pixi.dev.js"></script>
+    <script src="NormalMapFilter.js"></script>
+    <script src="js/registry.js"></script>
+    <script src="js/core.js"></script>
+
+
 
 </head>
 <body>
 
+    <div id="example1">
+        <noscript><img src="fallback.jpg"/></noscript>
+    </div>
+
 	<script>
-	
-	var viewWidth =  800;  // /2;
-	var viewHeight = 600; //512 /2;
 
-	// Create a pixi renderer
-	var renderer = PIXI.autoDetectRenderer(viewWidth, viewHeight);
-	renderer.view.className = "rendererView";
-	
-	// add render view to DOM
-	document.body.appendChild(renderer.view);
-
-	// create an new instance of a pixi stage
-	var stage = new PIXI.Stage(0xFFFFFF);
-
-	// create a background texture
-	var backgroundLightFilter = new PIXI.NormalMapFilter(PIXI.Texture.fromImage("background_n.png"));
-	var backgroundSprite = PIXI.Sprite.fromImage("background.jpg");
-	backgroundSprite.filters = [backgroundLightFilter];
-	stage.addChild(backgroundSprite);
-
-	// create a background texture
-	var foregroundLightFilter = new PIXI.NormalMapFilter(PIXI.Texture.fromImage("foreground_n.png"));
-	var foregroundSprite = PIXI.Sprite.fromImage("foreground.png");
-	foregroundSprite.filters = [foregroundLightFilter];
-	stage.addChild(foregroundSprite);
-
-    // create a background texture
-	var objectLightFilter = new PIXI.NormalMapFilter(PIXI.Texture.fromImage("betty_n.png"));
-	var objectSprite = PIXI.Sprite.fromImage("betty.png");
-	objectSprite.filters = [objectLightFilter];
-	stage.addChild(objectSprite);
-
-
-	lightSource = createLightSource(600,250);
-    lightSource.color = {r:1.0, g:0.8, b:0.5, a:1.0};
-
-    ambientLight = {};
-    ambientLight.color = {r:0.25, g:0.25, b:0.45, a:1.0};
-
-    createControls();
-
-    function createControls()
-    {
-        var slide = new PIXI.Graphics();
-        slide.beginFill(0x000000);
-        slide.drawRect(0,0,viewWidth,100);
-        slide.endFill();
-        slide.alpha = 0.9;
-        slide.position.y = viewHeight-100;
-        stage.addChild(slide);
-
-        var text = new PIXI.Text("SpriteIlluminator demo", {font:"50px Arial", fill:"white"});
-        slide.addChild(text);
-
-        text = new PIXI.Text("Light:", {font:"24px Arial", fill:"white"});
-        text.position.y = 50;
-        slide.addChild(text);
-
-        text = new PIXI.Text("Ambient:", {font:"24px Arial", fill:"white"});
-        text.position.y = 74;
-        slide.addChild(text);
-
-        createLightButton(slide, lightSource, 1.0, 1.0, 1.0, 200, 50+24/2);
-        createLightButton(slide, lightSource, 1.0, 0.0, 0.0, 230, 50+24/2);
-        createLightButton(slide, lightSource, 0.0, 1.0, 0.0, 260, 50+24/2);
-        createLightButton(slide, lightSource, 0.0, 0.0, 1.0, 290, 50+24/2);
-
-        createLightButton(slide, ambientLight, 0.5, 0.5, 0.5, 200, 50+24+24/2);
-        createLightButton(slide, ambientLight, 0.5, 0.0, 0.0, 230, 50+24+24/2);
-        createLightButton(slide, ambientLight, 0.0, 0.5, 0.0, 260, 50+24+24/2);
-        createLightButton(slide, ambientLight, 0.0, 0.0, 0.5, 290, 50+24+24/2);
-        createLightButton(slide, ambientLight, 0.0, 0.0, 0.0, 320, 50+24+24/2);
-    }
-
-
-    function createLightButton(slide, light, red, green, blue, x, y)
-    {
-        var button = new PIXI.Graphics();
-        slide.addChild(button);
-        button.beginFill(((255*red)&255)*0x10000 + ((255*green)&255)*0x100 + ((255*blue)&255));
-        button.drawCircle(0,0,10);
-        button.endFill();
-        button.position.x = x;
-        button.position.y = y;
-        button.setInteractive(true);
-        button.hitArea = new PIXI.Circle(0, 0, 10);
-        button.buttonMode = true;
-        button.lightSource = light;
-        button.click = button.tap = function(data)
-        {
-            this.lightSource.color = {r:red, g:green, b:blue, a:1.0};
-        };
-
-        return button;
-    }
-
-
-	function createLightSource(x, y)
-	{
-		var lightSource = new PIXI.Sprite.fromImage("light.png");
-
-		lightSource.interactive = true;
-		lightSource.buttonMode = true;
-		
-		lightSource.anchor.x = 0.5;
-		lightSource.anchor.y = 0.5;
-		
-		lightSource.mousedown = lightSource.touchstart = function(data)
-		{
-			this.data = data;
-			this.alpha = 0.9;
-			this.dragging = true;
-            this.sx = this.data.getLocalPosition(lightSource).x * lightSource.scale.x;
-            this.sy = this.data.getLocalPosition(lightSource).y * lightSource.scale.y;
-        };
-		
-		lightSource.mouseup = lightSource.mouseupoutside = lightSource.touchend = lightSource.touchendoutside = function(data)
-		{
-			this.alpha = 1
-			this.dragging = false;
-			// set the interaction data to null
-			this.data = null;
-		};
-		
-		lightSource.mousemove = lightSource.touchmove = function(data)
-		{
-			if(this.dragging)
-			{
-				// need to get parent coords..
-				var newPosition = this.data.getLocalPosition(this.parent);
-				// this.position.x = newPosition.x;
-				// this.position.y = newPosition.y;
-                this.position.x = newPosition.x - this.sx;
-                this.position.y = newPosition.y - this.sy;
-            }
-		};
-		
-		// move the sprite to its designated position
-		lightSource.position.x = x;
-		lightSource.position.y = y;
-
-        lightSource.color = {};
-
-		// add it to the stage
-		stage.addChild(lightSource);
-
-		return lightSource;
-	}
-
-	requestAnimationFrame(animate);
-
-	function animate() 
-	{
-		var mouse = stage.interactionManager.mouse;
-
-		var lightPos = lightSource.position;
-        var lightColor = lightSource.color;
-
-		if( lightPos.x < 0) lightPos.x = 0;
-		else if( lightPos.x > viewWidth) lightPos.x = viewWidth;
-
-		if( lightPos.y < 0) lightPos.y = 0;
-		else if( lightPos.y > viewHeight) lightPos.y = viewHeight;
-
-		objectLightFilter.uniforms.LightPos.value[0] = lightPos.x;
-		objectLightFilter.uniforms.LightPos.value[1] = lightPos.y;
-        objectLightFilter.uniforms.LightColor.value[0] = lightColor.r;
-        objectLightFilter.uniforms.LightColor.value[1] = lightColor.g;
-        objectLightFilter.uniforms.LightColor.value[2] = lightColor.b;
-        objectLightFilter.uniforms.LightColor.value[3] = lightColor.a;
-        objectLightFilter.uniforms.AmbientColor.value[0] = ambientLight.color.r;
-        objectLightFilter.uniforms.AmbientColor.value[1] = ambientLight.color.g;
-        objectLightFilter.uniforms.AmbientColor.value[2] = ambientLight.color.b;
-        objectLightFilter.uniforms.AmbientColor.value[3] = ambientLight.color.a;
-
-		backgroundLightFilter.uniforms.LightPos.value[0] = lightPos.x;
-		backgroundLightFilter.uniforms.LightPos.value[1] = lightPos.y;
-        backgroundLightFilter.uniforms.LightColor.value[0] = lightColor.r;
-        backgroundLightFilter.uniforms.LightColor.value[1] = lightColor.g;
-        backgroundLightFilter.uniforms.LightColor.value[2] = lightColor.b;
-        backgroundLightFilter.uniforms.LightColor.value[3] = lightColor.a;
-        backgroundLightFilter.uniforms.AmbientColor.value[0] = ambientLight.color.r;
-        backgroundLightFilter.uniforms.AmbientColor.value[1] = ambientLight.color.g;
-        backgroundLightFilter.uniforms.AmbientColor.value[2] = ambientLight.color.b;
-        backgroundLightFilter.uniforms.AmbientColor.value[3] = ambientLight.color.a;
-
-		foregroundLightFilter.uniforms.LightPos.value[0] = lightPos.x;
-		foregroundLightFilter.uniforms.LightPos.value[1] = lightPos.y;
-        foregroundLightFilter.uniforms.LightColor.value[0] = lightColor.r;
-        foregroundLightFilter.uniforms.LightColor.value[1] = lightColor.g;
-        foregroundLightFilter.uniforms.LightColor.value[2] = lightColor.b;
-        foregroundLightFilter.uniforms.LightColor.value[3] = lightColor.a;
-        foregroundLightFilter.uniforms.AmbientColor.value[0] = ambientLight.color.r;
-        foregroundLightFilter.uniforms.AmbientColor.value[1] = ambientLight.color.g;
-        foregroundLightFilter.uniforms.AmbientColor.value[2] = ambientLight.color.b;
-        foregroundLightFilter.uniforms.AmbientColor.value[3] = ambientLight.color.a;
-
-
-	    renderer.render(stage);
-	    
-	    requestAnimationFrame( animate );
-	}
+    var ex1 = new example1("example1");
 
 	</script>
 
