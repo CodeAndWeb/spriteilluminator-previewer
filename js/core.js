@@ -12,9 +12,11 @@ example1 = function(DOM_Element) {
     // create an new instance of a pixi stage
     _globals.stage = new PIXI.Stage(0xFFFFFF);
 
+    _globals.lightImage = PIXI.Texture.fromImage("light-no-arrows.png")
+
     // create a background texture
     _globals.backgroundLightFilter = new PIXI.NormalMapFilter(PIXI.Texture.fromImage("background_n.png"));
-    var backgroundSprite = PIXI.Sprite.fromImage("background.jpg");
+    var backgroundSprite = PIXI.Sprite.fromImage("background.png");
     backgroundSprite.filters = [_globals.backgroundLightFilter];
      _globals.stage.addChild(backgroundSprite);
 
@@ -31,11 +33,11 @@ example1 = function(DOM_Element) {
      _globals.stage.addChild(objectSprite);
 
 
-    lightSource = createLightSource(600,250);
-    lightSource.color = {r:1.0, g:0.8, b:0.5, a:1.0};
+    lightSource = createLightSource(600,150);
+    lightSource.color = {r:1.0, g:0.7, b:0.0, a:1.0};
 
     ambientLight = {};
-    ambientLight.color = {r:0.25, g:0.25, b:0.45, a:1.0};
+    ambientLight.color = {r:0.3, g:0.3, b:0.3, a:1.0};
 
     createControls();
 
@@ -43,33 +45,37 @@ example1 = function(DOM_Element) {
     {
         var slide = new PIXI.Graphics();
         slide.beginFill(0x000000);
-        slide.drawRect(0,0,_globals.viewWidth,100);
+        slide.drawRect(0,0,_globals.viewWidth,24);
         slide.endFill();
         slide.alpha = 0.9;
-        slide.position.y = _globals.viewHeight-100;
+        slide.position.y = _globals.viewHeight-24;
          _globals.stage.addChild(slide);
 
-        var text = new PIXI.Text("SpriteIlluminator demo", {font:"50px Arial", fill:"white"});
+//        var text = new PIXI.Text("SpriteIlluminator demo", {font:"50px Arial", fill:"white"});
+//        slide.addChild(text);
+
+        text = new PIXI.Text("Point Light:", {font:"24px Arial", fill:"white"});
+        text.position.y = 0;
         slide.addChild(text);
 
-        text = new PIXI.Text("Light:", {font:"24px Arial", fill:"white"});
-        text.position.y = 50;
+        createLightButton(slide, lightSource, 1.0, 1.0, 1.0, text.position.x + text.width + 20 +   0, text.position.y+24/2);
+        createLightButton(slide, lightSource, 1.0, 0.0, 0.0, text.position.x + text.width + 20 +  30, text.position.y+24/2);
+        createLightButton(slide, lightSource, 0.0, 1.0, 0.0, text.position.x + text.width + 20 +  60, text.position.y+24/2);
+        createLightButton(slide, lightSource, 0.0, 0.0, 1.0, text.position.x + text.width + 20 +  90, text.position.y+24/2);
+        createLightButton(slide, lightSource, 1.0, 1.0, 0.0, text.position.x + text.width + 20 + 120, text.position.y+24/2);
+        createLightButton(slide, lightSource, 1.0, 0.7, 0.0, text.position.x + text.width + 20 + 150, text.position.y+24/2);
+
+        text = new PIXI.Text("Ambient Light:", {font:"24px Arial", fill:"white"});
+        text.position.y = 0;
+        text.position.x = 500;
         slide.addChild(text);
 
-        text = new PIXI.Text("Ambient:", {font:"24px Arial", fill:"white"});
-        text.position.y = 74;
-        slide.addChild(text);
-
-        createLightButton(slide, lightSource, 1.0, 1.0, 1.0, 200, 50+24/2);
-        createLightButton(slide, lightSource, 1.0, 0.0, 0.0, 230, 50+24/2);
-        createLightButton(slide, lightSource, 0.0, 1.0, 0.0, 260, 50+24/2);
-        createLightButton(slide, lightSource, 0.0, 0.0, 1.0, 290, 50+24/2);
-
-        createLightButton(slide, ambientLight, 0.5, 0.5, 0.5, 200, 50+24+24/2);
-        createLightButton(slide, ambientLight, 0.5, 0.0, 0.0, 230, 50+24+24/2);
-        createLightButton(slide, ambientLight, 0.0, 0.5, 0.0, 260, 50+24+24/2);
-        createLightButton(slide, ambientLight, 0.0, 0.0, 0.5, 290, 50+24+24/2);
-        createLightButton(slide, ambientLight, 0.0, 0.0, 0.0, 320, 50+24+24/2);
+        createLightButton(slide, ambientLight, 0.3, 0.3, 0.3, text.position.x + text.width + 20 +   0, text.position.y+24/2);
+        createLightButton(slide, ambientLight, 0.5, 0.5, 0.5, text.position.x + text.width + 20 +  30, text.position.y+24/2);
+        createLightButton(slide, ambientLight, 0.5, 0.0, 0.0, text.position.x + text.width + 20 +  60, text.position.y+24/2);
+        createLightButton(slide, ambientLight, 0.0, 0.5, 0.0, text.position.x + text.width + 20 +  90, text.position.y+24/2);
+        createLightButton(slide, ambientLight, 0.0, 0.0, 0.5, text.position.x + text.width + 20 + 120, text.position.y+24/2);
+        createLightButton(slide, ambientLight, 0.0, 0.0, 0.0, text.position.x + text.width + 20 + 150, text.position.y+24/2);
     }
 
 
@@ -139,6 +145,7 @@ example1 = function(DOM_Element) {
 
         lightSource.mousedown = lightSource.touchstart = function(data)
         {
+            this.setTexture(_globals.lightImage);
             this.data = data;
             this.alpha = 0.9;
             this.dragging = true;
