@@ -15,12 +15,20 @@ example1 = function(DOM_Element) {
     _globals.lightImage = PIXI.Texture.fromImage("light-no-arrows.png")
 
     // create a background texture
+    _globals.backgroundLightFilter = new PIXI.NormalMapFilter(PIXI.Texture.fromImage("all_n.png"));
+    var backgroundSprite = PIXI.Sprite.fromImage("all.png");
+    backgroundSprite.filters = [_globals.backgroundLightFilter];
+     _globals.stage.addChild(backgroundSprite);
+
+/*
+ 
+    // create a background texture
     _globals.backgroundLightFilter = new PIXI.NormalMapFilter(PIXI.Texture.fromImage("background_n.png"));
     var backgroundSprite = PIXI.Sprite.fromImage("background.png");
     backgroundSprite.filters = [_globals.backgroundLightFilter];
      _globals.stage.addChild(backgroundSprite);
 
-    // create a background texture
+   // create a background texture
     _globals.foregroundLightFilter = new PIXI.NormalMapFilter(PIXI.Texture.fromImage("foreground_n.png"));
     var foregroundSprite = PIXI.Sprite.fromImage("foreground.png");
     foregroundSprite.filters = [_globals.foregroundLightFilter];
@@ -31,10 +39,12 @@ example1 = function(DOM_Element) {
     var objectSprite = PIXI.Sprite.fromImage("betty.png");
     objectSprite.filters = [_globals.objectLightFilter];
      _globals.stage.addChild(objectSprite);
-
+*/
 
     lightSource = createLightSource(600,150);
     lightSource.color = {r:1.0, g:0.7, b:0.0, a:1.0};
+    lightSource.shakeDelay = 10;
+    lightSource.shakeDirection = 1;
 
     ambientLight = {};
     ambientLight.color = {r:0.3, g:0.3, b:0.3, a:1.0};
@@ -146,6 +156,8 @@ example1 = function(DOM_Element) {
         lightSource.mousedown = lightSource.touchstart = function(data)
         {
             this.setTexture(_globals.lightImage);
+            lightSource.shakeDirection = 0;
+
             this.data = data;
             this.alpha = 0.9;
             this.dragging = true;
@@ -192,6 +204,27 @@ example1 = function(DOM_Element) {
     {
         var mouse =  _globals.stage.interactionManager.mouse;
 
+        lightSource.shakeDelay--;
+        if(lightSource.shakeDelay <0)
+        {
+            lightSource.rotation += lightSource.shakeDirection * 0.1;            
+
+            if(lightSource.rotation > 0.2)
+            {
+                lightSource.shakeDirection = -1;
+            }
+            else if(lightSource.rotation < -0.2)
+            {
+                lightSource.shakeDirection = 1;
+            }
+
+            if((lightSource.rotation > -0.01) && (lightSource.rotation < 0.01) && lightSource.shakeDirection==1)
+            {
+                lightSource.shakeDelay = 250;                
+            }
+        }
+
+
         var lightPos = lightSource.position;
         var lightColor = lightSource.color;
 
@@ -200,17 +233,6 @@ example1 = function(DOM_Element) {
 
         if( lightPos.y < 0) lightPos.y = 0;
         else if( lightPos.y > _globals.viewHeight) lightPos.y = _globals.viewHeight;
-
-        _globals.objectLightFilter.uniforms.LightPos.value[0] = lightPos.x;
-        _globals.objectLightFilter.uniforms.LightPos.value[1] = lightPos.y;
-        _globals.objectLightFilter.uniforms.LightColor.value[0] = lightColor.r;
-        _globals.objectLightFilter.uniforms.LightColor.value[1] = lightColor.g;
-        _globals.objectLightFilter.uniforms.LightColor.value[2] = lightColor.b;
-        _globals.objectLightFilter.uniforms.LightColor.value[3] = lightColor.a;
-        _globals.objectLightFilter.uniforms.AmbientColor.value[0] = ambientLight.color.r;
-        _globals.objectLightFilter.uniforms.AmbientColor.value[1] = ambientLight.color.g;
-        _globals.objectLightFilter.uniforms.AmbientColor.value[2] = ambientLight.color.b;
-        _globals.objectLightFilter.uniforms.AmbientColor.value[3] = ambientLight.color.a;
 
         _globals.backgroundLightFilter.uniforms.LightPos.value[0] = lightPos.x;
         _globals.backgroundLightFilter.uniforms.LightPos.value[1] = lightPos.y;
@@ -223,6 +245,20 @@ example1 = function(DOM_Element) {
         _globals.backgroundLightFilter.uniforms.AmbientColor.value[2] = ambientLight.color.b;
         _globals.backgroundLightFilter.uniforms.AmbientColor.value[3] = ambientLight.color.a;
 
+        /*
+        _globals.objectLightFilter.uniforms.LightPos.value[0] = lightPos.x;
+        _globals.objectLightFilter.uniforms.LightPos.value[1] = lightPos.y;
+        _globals.objectLightFilter.uniforms.LightColor.value[0] = lightColor.r;
+        _globals.objectLightFilter.uniforms.LightColor.value[1] = lightColor.g;
+        _globals.objectLightFilter.uniforms.LightColor.value[2] = lightColor.b;
+        _globals.objectLightFilter.uniforms.LightColor.value[3] = lightColor.a;
+        _globals.objectLightFilter.uniforms.AmbientColor.value[0] = ambientLight.color.r;
+        _globals.objectLightFilter.uniforms.AmbientColor.value[1] = ambientLight.color.g;
+        _globals.objectLightFilter.uniforms.AmbientColor.value[2] = ambientLight.color.b;
+        _globals.objectLightFilter.uniforms.AmbientColor.value[3] = ambientLight.color.a;
+
+
+
         _globals.foregroundLightFilter.uniforms.LightPos.value[0] = lightPos.x;
         _globals.foregroundLightFilter.uniforms.LightPos.value[1] = lightPos.y;
         _globals.foregroundLightFilter.uniforms.LightColor.value[0] = lightColor.r;
@@ -233,7 +269,7 @@ example1 = function(DOM_Element) {
         _globals.foregroundLightFilter.uniforms.AmbientColor.value[1] = ambientLight.color.g;
         _globals.foregroundLightFilter.uniforms.AmbientColor.value[2] = ambientLight.color.b;
         _globals.foregroundLightFilter.uniforms.AmbientColor.value[3] = ambientLight.color.a;
-
+*/
 
         _globals.renderer.render( _globals.stage);
 
